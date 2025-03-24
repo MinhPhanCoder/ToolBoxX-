@@ -1,78 +1,84 @@
 import React, { useEffect, useState, createContext, useContext } from 'react';
-interface LanguageContextType {
-  language: string;
-  changeLanguage: (lang: string) => void;
-  t: (key: string) => string;
+interface Translations {
+  [key: string]: {
+    [key: string]: string;
+  };
 }
-// Simple translations for demonstration
-const translations: Record<string, Record<string, string>> = {
+// Simple translations
+const translations: Translations = {
   en: {
     dashboard: 'Dashboard',
     settings: 'Settings',
-    goldTracker: 'Gold Price Tracker',
+    login: 'Login',
+    logout: 'Logout',
+    register: 'Register',
+    goldPrice: 'Gold Price',
     lotteryResults: 'Lottery Results',
     loginHistory: 'Login History',
     chatGPT: 'Chat with GPT',
-    adminPanel: 'Admin Panel',
-    logout: 'Logout',
-    login: 'Login',
-    register: 'Register',
+    forms: 'Forms',
+    language: 'Language',
+    theme: 'Theme',
+    profile: 'Profile',
+    search: 'Search...',
     email: 'Email',
     password: 'Password',
     name: 'Name',
-    search: 'Search',
-    welcome: 'Welcome to the Toolify',
-    language: 'Language',
-    theme: 'Theme',
-    notifications: 'Notifications',
-    profile: 'Profile'
-    // Add more translations as needed
+    submit: 'Submit',
+    welcome: 'Welcome',
+    selectTool: 'Select a tool to get started'
   },
   es: {
-    dashboard: 'Panel Principal',
-    settings: 'Configuración',
-    goldTracker: 'Seguimiento de Oro',
-    lotteryResults: 'Resultados de Lotería',
-    loginHistory: 'Historial de Inicio de Sesión',
-    chatGPT: 'Chat con GPT',
-    adminPanel: 'Panel de Administrador',
-    logout: 'Cerrar Sesión',
-    login: 'Iniciar Sesión',
+    dashboard: 'Panel',
+    settings: 'Ajustes',
+    login: 'Iniciar sesión',
+    logout: 'Cerrar sesión',
     register: 'Registrarse',
-    email: 'Correo Electrónico',
-    password: 'Contraseña',
-    name: 'Nombre',
-    search: 'Buscar',
-    welcome: 'Bienvenido al Panel de Utilidades',
+    goldPrice: 'Precio del Oro',
+    lotteryResults: 'Resultados de Lotería',
+    loginHistory: 'Historial de Sesiones',
+    chatGPT: 'Chat con GPT',
+    forms: 'Formularios',
     language: 'Idioma',
     theme: 'Tema',
-    notifications: 'Notificaciones',
-    profile: 'Perfil'
-    // Add more translations as needed
+    profile: 'Perfil',
+    search: 'Buscar...',
+    email: 'Correo electrónico',
+    password: 'Contraseña',
+    name: 'Nombre',
+    submit: 'Enviar',
+    welcome: 'Bienvenido',
+    selectTool: 'Seleccione una herramienta para comenzar'
   },
   fr: {
-    dashboard: 'Tableau de Bord',
+    dashboard: 'Tableau de bord',
     settings: 'Paramètres',
-    goldTracker: "Suivi de l'Or",
+    login: 'Connexion',
+    logout: 'Déconnexion',
+    register: "S'inscrire",
+    goldPrice: "Prix de l'Or",
     lotteryResults: 'Résultats de Loterie',
     loginHistory: 'Historique de Connexion',
-    chatGPT: 'Discuter avec GPT',
-    adminPanel: "Panneau d'Administration",
-    logout: 'Déconnexion',
-    login: 'Connexion',
-    register: "S'inscrire",
-    email: 'Email',
-    password: 'Mot de Passe',
-    name: 'Nom',
-    search: 'Rechercher',
-    welcome: 'Bienvenue sur le Tableau de Bord des Utilitaires',
+    chatGPT: 'Chat avec GPT',
+    forms: 'Formulaires',
     language: 'Langue',
     theme: 'Thème',
-    notifications: 'Notifications',
-    profile: 'Profil'
-    // Add more translations as needed
+    profile: 'Profil',
+    search: 'Rechercher...',
+    email: 'E-mail',
+    password: 'Mot de passe',
+    name: 'Nom',
+    submit: 'Soumettre',
+    welcome: 'Bienvenue',
+    selectTool: 'Sélectionnez un outil pour commencer'
   }
 };
+interface LanguageContextType {
+  language: string;
+  setLanguage: (lang: string) => void;
+  t: (key: string) => string;
+  availableLanguages: string[];
+}
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
 export const useLanguage = () => {
   const context = useContext(LanguageContext);
@@ -86,27 +92,27 @@ export const LanguageProvider: React.FC<{
 }> = ({
   children
 }) => {
-  const [language, setLanguage] = useState(() => {
-    const savedLanguage = localStorage.getItem('language');
-    return savedLanguage || 'en';
-  });
+  const [language, setLanguageState] = useState('en');
+  const availableLanguages = Object.keys(translations);
   useEffect(() => {
-    localStorage.setItem('language', language);
-  }, [language]);
-  const changeLanguage = (lang: string) => {
-    if (translations[lang]) {
-      setLanguage(lang);
+    const storedLanguage = localStorage.getItem('language');
+    if (storedLanguage && availableLanguages.includes(storedLanguage)) {
+      setLanguageState(storedLanguage);
     }
+  }, []);
+  const setLanguage = (lang: string) => {
+    setLanguageState(lang);
+    localStorage.setItem('language', lang);
   };
   const t = (key: string) => {
     return translations[language]?.[key] || key;
   };
-  const value = {
+  return <LanguageContext.Provider value={{
     language,
-    changeLanguage,
-    t
-  };
-  return <LanguageContext.Provider value={value}>
+    setLanguage,
+    t,
+    availableLanguages
+  }}>
       {children}
     </LanguageContext.Provider>;
 };

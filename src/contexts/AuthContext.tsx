@@ -1,22 +1,21 @@
 import React, { useEffect, useState, createContext, useContext } from 'react';
-// Mock user types for demonstration
 interface User {
   id: string;
   name: string;
   email: string;
   role: 'user' | 'admin';
   avatar?: string;
-  lastLogin?: Date;
 }
 interface AuthContextType {
-  currentUser: User | null;
-  isLoading: boolean;
-  login: (email: string, password: string) => Promise<void>;
-  loginWithGoogle: () => Promise<void>;
-  loginWithFacebook: () => Promise<void>;
-  register: (email: string, password: string, name: string) => Promise<void>;
+  user: User | null;
+  loading: boolean;
+  error: string | null;
+  login: (provider: 'google' | 'facebook' | 'email', credentials?: {
+    email: string;
+    password: string;
+  }) => Promise<void>;
   logout: () => Promise<void>;
-  isAdmin: boolean;
+  register: (email: string, password: string, name: string) => Promise<void>;
 }
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const useAuth = () => {
@@ -31,115 +30,88 @@ export const AuthProvider: React.FC<{
 }> = ({
   children
 }) => {
-  const [currentUser, setCurrentUser] = useState<User | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  // Mock authentication for demonstration
+  const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  // Simulate authentication check on mount
   useEffect(() => {
-    // Simulate checking if user is logged in
+    // In a real app, this would check for an existing session
     const storedUser = localStorage.getItem('user');
     if (storedUser) {
-      setCurrentUser(JSON.parse(storedUser));
+      setUser(JSON.parse(storedUser));
     }
-    setIsLoading(false);
+    setLoading(false);
   }, []);
-  const login = async (email: string, password: string) => {
-    setIsLoading(true);
+  // Mock login function
+  const login = async (provider: 'google' | 'facebook' | 'email', credentials?: {
+    email: string;
+    password: string;
+  }) => {
+    setLoading(true);
+    setError(null);
     try {
-      // Mock login - in a real app, this would call an authentication API
+      // Simulate API call delay
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      // Mock user data - in a real app this would come from your auth provider
       const mockUser: User = {
         id: '123',
-        name: 'Demo User',
-        email: email,
+        name: provider === 'email' ? 'John Doe' : 'Social User',
+        email: credentials?.email || 'user@example.com',
         role: 'user',
-        avatar: 'https://i.pravatar.cc/150?u=123',
-        lastLogin: new Date()
+        avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80'
       };
-      setCurrentUser(mockUser);
+      setUser(mockUser);
       localStorage.setItem('user', JSON.stringify(mockUser));
-    } catch (error) {
-      console.error('Login error:', error);
-      throw error;
+    } catch (err: any) {
+      setError(err.message || 'Failed to login');
     } finally {
-      setIsLoading(false);
+      setLoading(false);
     }
   };
-  const loginWithGoogle = async () => {
-    setIsLoading(true);
-    try {
-      // Mock Google login
-      const mockUser: User = {
-        id: '456',
-        name: 'Google User',
-        email: 'google@example.com',
-        role: 'user',
-        avatar: 'https://i.pravatar.cc/150?u=456',
-        lastLogin: new Date()
-      };
-      setCurrentUser(mockUser);
-      localStorage.setItem('user', JSON.stringify(mockUser));
-    } catch (error) {
-      console.error('Google login error:', error);
-      throw error;
-    } finally {
-      setIsLoading(false);
-    }
-  };
-  const loginWithFacebook = async () => {
-    setIsLoading(true);
-    try {
-      // Mock Facebook login
-      const mockUser: User = {
-        id: '789',
-        name: 'Facebook User',
-        email: 'facebook@example.com',
-        role: 'user',
-        avatar: 'https://i.pravatar.cc/150?u=789',
-        lastLogin: new Date()
-      };
-      setCurrentUser(mockUser);
-      localStorage.setItem('user', JSON.stringify(mockUser));
-    } catch (error) {
-      console.error('Facebook login error:', error);
-      throw error;
-    } finally {
-      setIsLoading(false);
-    }
-  };
-  const register = async (email: string, password: string, name: string) => {
-    setIsLoading(true);
-    try {
-      // Mock registration
-      const mockUser: User = {
-        id: Date.now().toString(),
-        name: name,
-        email: email,
-        role: 'user',
-        avatar: `https://i.pravatar.cc/150?u=${Date.now()}`,
-        lastLogin: new Date()
-      };
-      setCurrentUser(mockUser);
-      localStorage.setItem('user', JSON.stringify(mockUser));
-    } catch (error) {
-      console.error('Registration error:', error);
-      throw error;
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  // Mock logout function
   const logout = async () => {
-    // Mock logout
-    setCurrentUser(null);
-    localStorage.removeItem('user');
+    setLoading(true);
+    try {
+      // Simulate API call delay
+      await new Promise(resolve => setTimeout(resolve, 500));
+      setUser(null);
+      localStorage.removeItem('user');
+    } catch (err: any) {
+      setError(err.message || 'Failed to logout');
+    } finally {
+      setLoading(false);
+    }
   };
-  const value = {
-    currentUser,
-    isLoading,
+  // Mock register function
+  const register = async (email: string, password: string, name: string) => {
+    setLoading(true);
+    setError(null);
+    try {
+      // Simulate API call delay
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      // Mock user data - in a real app this would come from your auth provider
+      const mockUser: User = {
+        id: '123',
+        name,
+        email,
+        role: 'user'
+      };
+      setUser(mockUser);
+      localStorage.setItem('user', JSON.stringify(mockUser));
+    } catch (err: any) {
+      setError(err.message || 'Failed to register');
+    } finally {
+      setLoading(false);
+    }
+  };
+  return <AuthContext.Provider value={{
+    user,
+    loading,
+    error,
     login,
-    loginWithGoogle,
-    loginWithFacebook,
-    register,
     logout,
-    isAdmin: currentUser?.role === 'admin'
-  };
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+    register
+  }}>
+      {children}
+    </AuthContext.Provider>;
 };

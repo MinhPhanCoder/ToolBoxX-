@@ -1,46 +1,31 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { AuthProvider } from './contexts/AuthContext';
+import { ThemeProvider } from './contexts/ThemeContext';
 import { LanguageProvider } from './contexts/LanguageContext';
+import { AuthProvider } from './contexts/AuthContext';
 import Login from './pages/Login';
-import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
 import Settings from './pages/Settings';
-import GoldTracker from './pages/tools/GoldTracker';
-import LotteryResults from './pages/tools/LotteryResults';
-import LoginHistory from './pages/tools/LoginHistory';
-import ChatGPT from './pages/tools/ChatGPT';
-import AdminPanel from './pages/AdminPanel';
-import NotFound from './pages/NotFound';
-import Layout from './components/layout/Layout';
 import ProtectedRoute from './components/auth/ProtectedRoute';
-import AdminRoute from './components/auth/AdminRoute';
 export function App() {
-  return <AuthProvider>
+  return <ThemeProvider>
       <LanguageProvider>
-        <Router>
-          <Routes>
-            <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<Register />} />
-            <Route element={<ProtectedRoute />}>
-              <Route element={<Layout />}>
+        <AuthProvider>
+          <Router>
+            <div className="w-full min-h-screen bg-gray-50 text-gray-900 dark:bg-gray-900 dark:text-gray-100 transition-colors duration-200">
+              <Routes>
+                <Route path="/login" element={<Login />} />
+                <Route path="/dashboard/*" element={<ProtectedRoute>
+                      <Dashboard />
+                    </ProtectedRoute>} />
+                <Route path="/settings" element={<ProtectedRoute>
+                      <Settings />
+                    </ProtectedRoute>} />
                 <Route path="/" element={<Navigate to="/dashboard" replace />} />
-                <Route path="/dashboard" element={<Dashboard />} />
-                <Route path="/settings" element={<Settings />} />
-                {/* Tool Routes */}
-                <Route path="/tools/gold-tracker" element={<GoldTracker />} />
-                <Route path="/tools/lottery-results" element={<LotteryResults />} />
-                <Route path="/tools/login-history" element={<LoginHistory />} />
-                <Route path="/tools/chat-gpt" element={<ChatGPT />} />
-                {/* Admin Routes */}
-                <Route element={<AdminRoute />}>
-                  <Route path="/admin" element={<AdminPanel />} />
-                </Route>
-              </Route>
-            </Route>
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </Router>
+              </Routes>
+            </div>
+          </Router>
+        </AuthProvider>
       </LanguageProvider>
-    </AuthProvider>;
+    </ThemeProvider>;
 }

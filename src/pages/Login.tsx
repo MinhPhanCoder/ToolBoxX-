@@ -1,141 +1,116 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { UserIcon, LockIcon, FacebookIcon, MailIcon } from 'lucide-react';
+import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useLanguage } from '../contexts/LanguageContext';
-const Login = () => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
+import { useTheme } from '../contexts/ThemeContext';
+import Button from '../components/ui/Button';
+import Input from '../components/ui/Input';
+import { UserIcon, LockIcon, MailIcon, FacebookIcon, SunIcon, MoonIcon } from 'lucide-react';
+import GoogleIcon from '../components/ui/GoogleIcon';
+const Login: React.FC = () => {
   const {
     login,
-    loginWithGoogle,
-    loginWithFacebook
+    register,
+    loading,
+    error
   } = useAuth();
   const {
     t
   } = useLanguage();
+  const {
+    theme,
+    toggleTheme
+  } = useTheme();
   const navigate = useNavigate();
+  const [isLogin, setIsLogin] = useState(true);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [name, setName] = useState('');
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
-    setIsLoading(true);
     try {
-      await login(email, password);
+      if (isLogin) {
+        await login('email', {
+          email,
+          password
+        });
+      } else {
+        await register(email, password, name);
+      }
       navigate('/dashboard');
-    } catch (err) {
-      setError('Failed to sign in. Please check your credentials.');
-    } finally {
-      setIsLoading(false);
+    } catch (error) {
+      console.error('Authentication error:', error);
     }
   };
-  const handleGoogleLogin = async () => {
-    setError('');
-    setIsLoading(true);
+  const handleSocialLogin = async (provider: 'google' | 'facebook') => {
     try {
-      await loginWithGoogle();
+      await login(provider);
       navigate('/dashboard');
-    } catch (err) {
-      setError('Failed to sign in with Google.');
-    } finally {
-      setIsLoading(false);
+    } catch (error) {
+      console.error(`${provider} login error:`, error);
     }
   };
-  const handleFacebookLogin = async () => {
-    setError('');
-    setIsLoading(true);
-    try {
-      await loginWithFacebook();
-      navigate('/dashboard');
-    } catch (err) {
-      setError('Failed to sign in with Facebook.');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-  return <div className="min-h-screen flex items-center justify-center bg-gray-100 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8 bg-white p-6 sm:p-10 rounded-lg shadow-md">
-        <div className="text-center">
-          <h1 className="text-3xl font-extrabold text-gray-900">
-            Toolify
-          </h1>
-          <h2 className="mt-6 text-xl font-bold text-gray-900">{t('login')}</h2>
-        </div>
-        {error && <div className="bg-red-50 border-l-4 border-red-500 p-4 mb-4">
-            <div className="flex">
-              <div className="flex-shrink-0">
-                <svg className="h-5 w-5 text-red-500" viewBox="0 0 20 20" fill="currentColor">
-                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-                </svg>
-              </div>
-              <div className="ml-3">
-                <p className="text-sm text-red-700">{error}</p>
-              </div>
-            </div>
-          </div>}
-        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-          <div className="rounded-md shadow-sm -space-y-px">
-            <div>
-              <label htmlFor="email-address" className="sr-only">
-                Email address
-              </label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <MailIcon className="h-5 w-5 text-gray-400" />
-                </div>
-                <input id="email-address" name="email" type="email" autoComplete="email" required value={email} onChange={e => setEmail(e.target.value)} className="appearance-none rounded-none relative block w-full px-3 py-3 pl-10 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm" placeholder={t('email')} />
-              </div>
-            </div>
-            <div>
-              <label htmlFor="password" className="sr-only">
-                Password
-              </label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <LockIcon className="h-5 w-5 text-gray-400" />
-                </div>
-                <input id="password" name="password" type="password" autoComplete="current-password" required value={password} onChange={e => setPassword(e.target.value)} className="appearance-none rounded-none relative block w-full px-3 py-3 pl-10 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm" placeholder={t('password')} />
-              </div>
-            </div>
-          </div>
-          <div>
-            <button type="submit" disabled={isLoading} className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:bg-blue-400">
-              {isLoading ? 'Loading...' : t('login')}
-            </button>
-          </div>
-        </form>
-        <div className="mt-6">
-          <div className="relative">
-            <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-gray-300"></div>
-            </div>
-            <div className="relative flex justify-center text-sm">
-              <span className="px-2 bg-white text-gray-500">
-                Or continue with
-              </span>
-            </div>
-          </div>
-          <div className="mt-6 grid grid-cols-2 gap-3">
-            <button onClick={handleFacebookLogin} className="w-full flex items-center justify-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
-              <FacebookIcon className="h-5 w-5 text-blue-600" />
-              <span className="ml-2">Facebook</span>
-            </button>
-            <button onClick={handleGoogleLogin} className="w-full flex items-center justify-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
-              <svg className="h-5 w-5 text-red-500" viewBox="0 0 24 24">
-                <path fill="currentColor" d="M21.35,11.1H12.18V13.83H18.69C18.36,15.64 17.18,17 15.54,17.73C14.88,18.1 14.03,18.37 12.18,18.37C9.1,18.37 6.51,16.19 5.67,13.3C5.34,12.43 5.14,11.5 5.14,10.5C5.14,9.5 5.34,8.57 5.67,7.7C6.5,4.81 9.1,2.63 12.18,2.63C13.94,2.63 15.37,3.38 16.5,4.43L18.93,2C17.5,0.64 15.47,0 12.18,0C7.31,0 3.21,3.33 2.06,7.87C1.56,9.68 1.41,11.33 1.41,13C1.41,14.67 1.56,16.32 2.06,18.13C3.21,22.67 7.31,26 12.18,26C15.47,26 17.5,25.36 18.93,24C21.1,22.13 22.4,19.5 22.4,16.32C22.4,14.68 21.88,12.83 21.35,11.1Z" />
-              </svg>
-              <span className="ml-2">Google</span>
-            </button>
+  return <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex flex-col justify-center py-12 sm:px-6 lg:px-8 transition-colors duration-200">
+      <div className="absolute top-4 right-4">
+        <button onClick={toggleTheme} className="p-2 rounded-full text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 focus:outline-none" aria-label="Toggle theme">
+          {theme === 'dark' ? <SunIcon size={22} className="text-yellow-300" /> : <MoonIcon size={22} />}
+        </button>
+      </div>
+      <div className="sm:mx-auto sm:w-full sm:max-w-md">
+        <div className="flex justify-center">
+          <div className="w-16 h-16 bg-primary-600 rounded-full flex items-center justify-center">
+            <UserIcon size={32} className="text-white" />
           </div>
         </div>
-        <div className="text-center mt-4">
-          <p className="text-sm text-gray-600">
-            Don't have an account?{' '}
-            <Link to="/register" className="font-medium text-blue-600 hover:text-blue-500">
-              {t('register')}
-            </Link>
-          </p>
+        <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900 dark:text-white">
+          {isLogin ? t('login') : t('register')}
+        </h2>
+        <p className="mt-2 text-center text-sm text-gray-600 dark:text-gray-400">
+          {isLogin ? 'Sign in to your account' : 'Create a new account'}
+        </p>
+      </div>
+      <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
+        <div className="bg-white dark:bg-gray-800 py-8 px-4 shadow sm:rounded-lg sm:px-10 transition-colors duration-200">
+          <form className="space-y-6" onSubmit={handleSubmit}>
+            {!isLogin && <Input id="name" label={t('name')} type="text" value={name} onChange={e => setName(e.target.value)} required fullWidth leftIcon={<UserIcon size={18} className="text-gray-400 dark:text-gray-500" />} />}
+            <Input id="email" label={t('email')} type="email" value={email} onChange={e => setEmail(e.target.value)} required fullWidth leftIcon={<MailIcon size={18} className="text-gray-400 dark:text-gray-500" />} />
+            <Input id="password" label={t('password')} type="password" value={password} onChange={e => setPassword(e.target.value)} required fullWidth leftIcon={<LockIcon size={18} className="text-gray-400 dark:text-gray-500" />} />
+            {error && <div className="rounded-md bg-red-50 dark:bg-red-900/20 p-4">
+                <div className="text-sm text-red-700 dark:text-red-400">
+                  {error}
+                </div>
+              </div>}
+            <div>
+              <Button type="submit" fullWidth isLoading={loading}>
+                {isLogin ? t('login') : t('register')}
+              </Button>
+            </div>
+          </form>
+          <div className="mt-6">
+            <div className="relative">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-gray-300 dark:border-gray-700" />
+              </div>
+              <div className="relative flex justify-center text-sm">
+                <span className="px-2 bg-white dark:bg-gray-800 text-gray-500 dark:text-gray-400">
+                  {t('login')} {t('with')}
+                </span>
+              </div>
+            </div>
+            <div className="mt-6 grid grid-cols-2 gap-3">
+              <Button variant="outline" onClick={() => handleSocialLogin('facebook')} leftIcon={<FacebookIcon size={18} className="text-blue-600" />}>
+                Facebook
+              </Button>
+              <Button variant="outline" onClick={() => handleSocialLogin('google')} leftIcon={<GoogleIcon size={18} className="text-red-500" />}>
+                Google
+              </Button>
+            </div>
+          </div>
+          <div className="mt-6 text-center">
+            <button type="button" className="text-sm text-primary-600 dark:text-primary-400 hover:text-primary-500 dark:hover:text-primary-300" onClick={() => setIsLogin(!isLogin)}>
+              {isLogin ? t('register') : t('login')}
+            </button>
+          </div>
         </div>
       </div>
     </div>;
