@@ -21,7 +21,7 @@ const translations: Record<string, Record<string, string>> = {
     password: 'Password',
     name: 'Name',
     search: 'Search',
-    welcome: 'Welcome to the Utilities Dashboard',
+    welcome: 'Welcome to the Toolify',
     language: 'Language',
     theme: 'Theme',
     notifications: 'Notifications',

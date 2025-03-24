@@ -62,7 +62,7 @@ const Sidebar = ({
                 <span className="text-white font-bold">UD</span>
               </div>
               <h2 className="ml-2 text-lg font-semibold text-gray-900">
-                Utilities Dashboard
+                Toolify
               </h2>
             </div>
             <button className="md:hidden p-1 rounded-md text-gray-500 hover:text-gray-900" onClick={() => setIsOpen(false)}>
